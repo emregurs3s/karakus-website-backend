@@ -10,21 +10,21 @@ const categories = [
   {
     name: 'Şarj Aletleri',
     slug: 'sarj-aletleri',
-    image: '/logo.jpg',
+    image: 'https://picsum.photos/300/200?random=1',
     isActive: true,
     ordering: 1
   },
   {
     name: 'Airpods & Kulaklık',
     slug: 'airpods-kulaklik',
-    image: '/logo.jpg',
+    image: 'https://picsum.photos/300/200?random=2',
     isActive: true,
     ordering: 2
   },
   {
     name: 'Powerbank',
     slug: 'powerbank',
-    image: '/logo.jpg',
+    image: 'https://picsum.photos/300/200?random=3',
     isActive: true,
     ordering: 3
   }
@@ -59,7 +59,7 @@ const seedData = async () => {
         description: 'BU ÜRÜNÜ ALARAK ÇEKİLİŞE BİR HAK KAZANABİLİRSİNİZ NE KADAR ALIRSANIZ B…',
         price: 150,
         originalPrice: 160,
-        images: ['/logo.jpg'],
+        images: ['https://picsum.photos/400/300?random=10'],
         category: sarjAletleriCategory,
         colors: [],
         sizes: ['Standart'],
@@ -77,7 +77,7 @@ const seedData = async () => {
         description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
         price: 700,
         originalPrice: 799,
-        images: ['/logo.jpg'],
+        images: ['https://picsum.photos/400/300?random=11'],
         category: powerbankCategory,
         colors: [],
         sizes: ['10000mAh'],
@@ -95,7 +95,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['/logo.jpg'],
+        images: ['https://picsum.photos/400/300?random=' + (Get-Random -Minimum 14 -Maximum 20)],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -113,7 +113,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['/logo.jpg'],
+        images: ['https://picsum.photos/400/300?random=' + (Get-Random -Minimum 14 -Maximum 20)],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
