@@ -21,7 +21,7 @@ export interface IProduct extends Document {
   updatedAt: Date;
 }
 
-const productSchema = new Schema<IProduct>({
+const productSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -106,4 +106,5 @@ productSchema.index({ title: 'text', description: 'text' });
 productSchema.index({ category: 1, isActive: 1 });
 productSchema.index({ slug: 1 });
 
-export default mongoose.model<IProduct>('Product', productSchema);
+export const Product = mongoose.model<IProduct>('Product', productSchema);
+export default Product;
