@@ -16,38 +16,6 @@ router.post('/upload/single', authenticateToken, requireAdmin, (req, res) => {
     success: false,
     message: 'File upload disabled. Please use image URLs from GitHub repository.'
   });
-  return;
-  
-  // Old upload code (disabled)
-  /*
-  uploadSingle(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message
-      });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dosya yüklenmedi'
-      });
-    }
-
-    const imageUrl = `/uploads/${req.file.filename}`;
-    
-    res.json({
-      success: true,
-      message: 'Dosya başarıyla yüklendi',
-      data: {
-        url: imageUrl,
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        size: req.file.size
-      }
-    });
-  });
 });
 
 // POST /api/admin/upload/multiple - DISABLED: Use URL input instead  
@@ -56,67 +24,14 @@ router.post('/upload/multiple', authenticateToken, requireAdmin, (req, res) => {
     success: false,
     message: 'File upload disabled. Please use image URLs from GitHub repository.'
   });
-  return;
-  
-  // Old upload code (disabled)
-  /*
-  uploadMultiple(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message
-      });
-    }
-
-    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dosya yüklenmedi'
-      });
-    }
-
-    const files = req.files as Express.Multer.File[];
-    const uploadedFiles = files.map(file => ({
-      url: `/uploads/${file.filename}`,
-      filename: file.filename,
-      originalName: file.originalname,
-      size: file.size
-    }));
-    
-    res.json({
-      success: true,
-      message: 'Dosyalar başarıyla yüklendi',
-      data: uploadedFiles
-    });
-  });
 });
 
-// DELETE /api/admin/upload/:filename - Delete uploaded file
+// DELETE /api/admin/upload/:filename - DISABLED: Use URL input instead
 router.delete('/upload/:filename', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const filePath = path.join(process.cwd(), 'uploads', filename);
-    
-    // Check if file exists
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      res.json({
-        success: true,
-        message: 'Dosya başarıyla silindi'
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: 'Dosya bulunamadı'
-      });
-    }
-  } catch (error) {
-    console.error('Delete file error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Dosya silinirken hata oluştu'
-    });
-  }
+  res.status(410).json({
+    success: false,
+    message: 'File deletion disabled. Images are hosted on GitHub.'
+  });
 });
 
 // Apply auth middleware to all other admin routes
