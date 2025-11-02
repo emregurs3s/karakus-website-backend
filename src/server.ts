@@ -18,13 +18,7 @@ import paymentRouter from './routes/payment.js';
 dotenv.config();
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '5000', 10);
-
-// Validate port number
-if (PORT < 1 || PORT > 65535) {
-  console.error(`❌ Invalid port number: ${PORT}. Using default port 10000.`);
-  process.exit(1);
-}
+const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
 connectDB();
