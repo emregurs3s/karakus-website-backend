@@ -18,12 +18,7 @@ import paymentRouter from './routes/payment.js';
 dotenv.config();
 
 const app = express();
-// Parse PORT and handle invalid values
-let PORT = parseInt(process.env.PORT || '10000', 10);
-if (isNaN(PORT) || PORT < 1 || PORT > 65535) {
-  console.log(`⚠️  Invalid PORT value: ${process.env.PORT}. Using default: 10000`);
-  PORT = 10000;
-}
+const PORT = process.env.PORT || 10000;
 
 // Connect to MongoDB
 connectDB();
@@ -121,20 +116,12 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/payment', paymentRouter);
 
-// Serve frontend build files
-app.use(express.static(path.join(process.cwd(), '../Frontend/dist')));
-
-// Catch all handler: send back React's index.html file for SPA routing
-app.get('*', (req, res) => {
-  // Skip API routes
-  if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/images')) {
-    return res.status(404).json({
-      success: false,
-      message: 'Route not found'
-    });
-  }
-  
-  res.sendFile(path.join(process.cwd(), '../Frontend/dist/index.html'));
+// API 404 handler - only for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'API route not found'
+  });
 });
 
 
