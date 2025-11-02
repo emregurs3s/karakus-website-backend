@@ -72,7 +72,7 @@ const orderItemSchema = new Schema({
   }
 });
 
-const orderSchema = new Schema<IOrder>({
+const orderSchema = new Schema({
   orderId: {
     type: String,
     required: true,

@@ -10,21 +10,21 @@ const categories = [
   {
     name: 'Şarj Aletleri',
     slug: 'sarj-aletleri',
-    image: 'https://github.com/emregurs3s/karakus-images/raw/main/categories/sarj.jpg',
+    image: 'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Categories/Şarj.jpg',
     isActive: true,
     ordering: 1
   },
   {
     name: 'Airpods & Kulaklık',
     slug: 'airpods-kulaklik',
-    image: 'https://github.com/emregurs3s/karakus-images/raw/main/categories/kulaklik.jpg',
+    image: 'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Categories/Kulaklıklar.jpg',
     isActive: true,
     ordering: 2
   },
   {
     name: 'Powerbank',
     slug: 'powerbank',
-    image: 'https://github.com/emregurs3s/karakus-images/raw/main/categories/powerbank.jpg',
+    image: 'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Categories/Powerbank.jpg',
     isActive: true,
     ordering: 3
   }
