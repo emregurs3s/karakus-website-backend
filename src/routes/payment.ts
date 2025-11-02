@@ -44,8 +44,8 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
       random_nr: Math.random().toString(36).substr(2, 9),
       
       // Callback URLs
-      callback_url: `${process.env.FRONTEND_URL}/payment/callback`,
-      cancel_url: `${process.env.FRONTEND_URL}/cart`,
+      callback_url: `https://karakus-website-backend.onrender.com/api/payment/shopier-callback`,
+      cancel_url: `${process.env.FRONTEND_URL}/payment/fail`,
       success_url: `${process.env.FRONTEND_URL}/payment/success`,
       
       // Shipping info
