@@ -2,10 +2,14 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Uploads klasörünü oluştur
-const uploadsDir = path.join(process.cwd(), 'uploads');
+// Uploads klasörünü oluştur - Render için /tmp kullan
+const uploadsDir = process.env.NODE_ENV === 'production' 
+  ? path.join('/tmp', 'uploads')
+  : path.join(process.cwd(), 'uploads');
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log(`📁 Uploads directory created: ${uploadsDir}`);
 }
 
 // Multer storage konfigürasyonu

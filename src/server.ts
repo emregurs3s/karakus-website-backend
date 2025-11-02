@@ -88,7 +88,9 @@ app.use('/uploads', (req, res, next) => {
   res.header('Vary', 'Origin');
 
   next();
-}, express.static(path.join(process.cwd(), 'uploads'), {
+}, express.static(process.env.NODE_ENV === 'production' 
+  ? path.join('/tmp', 'uploads')
+  : path.join(process.cwd(), 'uploads'), {
   // Static file options
   maxAge: '1y',
   etag: true,
