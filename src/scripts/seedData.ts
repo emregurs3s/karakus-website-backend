@@ -10,21 +10,21 @@ const categories = [
   {
     name: 'Şarj Aletleri',
     slug: 'sarj-aletleri',
-    image: '/images/categories/sarj.jpg',
+    image: '/logo.jpg',
     isActive: true,
     ordering: 1
   },
   {
     name: 'Airpods & Kulaklık',
     slug: 'airpods-kulaklik',
-    image: '/images/categories/kulakliklar.jpg',
+    image: '/logo.jpg',
     isActive: true,
     ordering: 2
   },
   {
     name: 'Powerbank',
     slug: 'powerbank',
-    image: '/images/categories/powerbank.jpg',
+    image: '/logo.jpg',
     isActive: true,
     ordering: 3
   }
@@ -59,7 +59,7 @@ const seedData = async () => {
         description: 'BU ÜRÜNÜ ALARAK ÇEKİLİŞE BİR HAK KAZANABİLİRSİNİZ NE KADAR ALIRSANIZ B…',
         price: 150,
         originalPrice: 160,
-        images: ['/uploads/images-1762031631005-505086129.jpg'],
+        images: ['/logo.jpg'],
         category: sarjAletleriCategory,
         colors: [],
         sizes: ['Standart'],
@@ -77,7 +77,7 @@ const seedData = async () => {
         description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
         price: 700,
         originalPrice: 799,
-        images: ['/uploads/images-1762031733194-779001812.jpg'],
+        images: ['/logo.jpg'],
         category: powerbankCategory,
         colors: [],
         sizes: ['10000mAh'],
@@ -95,7 +95,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['/uploads/images-1762031631005-505086129.jpg'],
+        images: ['/logo.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -113,7 +113,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['/uploads/images-1762031858085-690994937.jpg', '/uploads/images-1762031859857-486472262.jpg'],
+        images: ['/logo.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
