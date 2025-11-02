@@ -10,21 +10,21 @@ const categories = [
   {
     name: 'Şarj Aletleri',
     slug: 'sarj-aletleri',
-    image: 'https://picsum.photos/300/200?random=1',
+    image: 'https://github.com/emregurs3s/karakus-images/raw/main/categories/sarj.jpg',
     isActive: true,
     ordering: 1
   },
   {
     name: 'Airpods & Kulaklık',
     slug: 'airpods-kulaklik',
-    image: 'https://picsum.photos/300/200?random=2',
+    image: 'https://github.com/emregurs3s/karakus-images/raw/main/categories/kulaklik.jpg',
     isActive: true,
     ordering: 2
   },
   {
     name: 'Powerbank',
     slug: 'powerbank',
-    image: 'https://picsum.photos/300/200?random=3',
+    image: 'https://github.com/emregurs3s/karakus-images/raw/main/categories/powerbank.jpg',
     isActive: true,
     ordering: 3
   }
@@ -59,7 +59,7 @@ const seedData = async () => {
         description: 'BU ÜRÜNÜ ALARAK ÇEKİLİŞE BİR HAK KAZANABİLİRSİNİZ NE KADAR ALIRSANIZ B…',
         price: 150,
         originalPrice: 160,
-        images: ['https://picsum.photos/400/300?random=10'],
+        images: ['https://github.com/emregurs3s/karakus-images/raw/main/products/product1.jpg'],
         category: sarjAletleriCategory,
         colors: [],
         sizes: ['Standart'],
@@ -77,7 +77,7 @@ const seedData = async () => {
         description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
         price: 700,
         originalPrice: 799,
-        images: ['https://picsum.photos/400/300?random=11'],
+        images: ['https://github.com/emregurs3s/karakus-images/raw/main/products/product1.jpg'],
         category: powerbankCategory,
         colors: [],
         sizes: ['10000mAh'],

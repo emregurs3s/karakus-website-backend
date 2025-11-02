@@ -10,8 +10,16 @@ import { uploadMultiple, uploadSingle } from '../middleware/upload.js';
 
 const router = express.Router();
 
-// POST /api/admin/upload/single - Upload single image
+// POST /api/admin/upload/single - DISABLED: Use URL input instead
 router.post('/upload/single', authenticateToken, requireAdmin, (req, res) => {
+  res.status(410).json({
+    success: false,
+    message: 'File upload disabled. Please use image URLs from GitHub repository.'
+  });
+  return;
+  
+  // Old upload code (disabled)
+  /*
   uploadSingle(req, res, (err) => {
     if (err) {
       return res.status(400).json({
@@ -42,8 +50,16 @@ router.post('/upload/single', authenticateToken, requireAdmin, (req, res) => {
   });
 });
 
-// POST /api/admin/upload/multiple - Upload multiple images
+// POST /api/admin/upload/multiple - DISABLED: Use URL input instead  
 router.post('/upload/multiple', authenticateToken, requireAdmin, (req, res) => {
+  res.status(410).json({
+    success: false,
+    message: 'File upload disabled. Please use image URLs from GitHub repository.'
+  });
+  return;
+  
+  // Old upload code (disabled)
+  /*
   uploadMultiple(req, res, (err) => {
     if (err) {
       return res.status(400).json({
