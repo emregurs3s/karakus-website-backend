@@ -13,6 +13,7 @@ import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
 import paymentRouter from './routes/payment.js';
+import ordersRouter from './routes/orders.js';
 
 // Load environment variables
 dotenv.config();
@@ -128,6 +129,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/payment', paymentRouter);
+app.use('/api/orders', ordersRouter);
 
 // API 404 handler - only for API routes
 app.use('/api/*', (req, res) => {

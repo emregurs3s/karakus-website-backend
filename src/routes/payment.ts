@@ -1,6 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { authenticateToken } from '../middleware/auth.js';
+import Order from '../models/Order.js';
 
 const router = express.Router();
 
@@ -22,6 +23,35 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
     // Generate unique order ID
     const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // Calculate shipping cost
+    const shippingCost = totalAmount >= 500 ? 0 : 29.90;
+    const finalAmount = totalAmount + shippingCost;
+    
+    // Create order in database
+    const order = new Order({
+      orderId,
+      userId: (req as any).user.userId,
+      customerInfo,
+      shippingAddress,
+      items: cartItems.map((item: any) => ({
+        productId: item.productId || item.id,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity,
+        color: item.color,
+        size: item.size,
+        image: item.image
+      })),
+      totalAmount,
+      shippingCost,
+      finalAmount,
+      status: 'pending',
+      paymentStatus: 'pending',
+      paymentMethod: 'shopier'
+    });
+    
+    await order.save();
+    
     // Prepare Shopier payment data
     const shopierData = {
       API_key: SHOPIER_API_KEY,
@@ -35,7 +65,7 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
       buyer_account_age: '1', // Hesap yaşı (gün)
       buyer_id_nr: customerInfo.tcNo || '',
       buyer_address: shippingAddress.fullAddress,
-      total_amount: totalAmount.toString(),
+      total_amount: finalAmount.toString(),
       currency: 'TL',
       platform: '1', // 1 = Web
       is_in_frame: '0',
@@ -123,15 +153,24 @@ router.post('/shopier-callback', async (req, res) => {
       total_amount 
     } = callbackData;
 
+    // Update order in database
+    const order = await Order.findOne({ orderId: platform_order_id });
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
     if (payment_status === '1') {
       // Payment successful
       console.log(`Payment successful for order: ${platform_order_id}`);
       
-      // Here you would:
-      // 1. Update order status in database
-      // 2. Send confirmation email
-      // 3. Update inventory
-      // 4. Create shipping label etc.
+      order.status = 'paid';
+      order.paymentStatus = 'completed';
+      order.shopierPaymentId = payment_id;
+      await order.save();
       
       res.json({
         success: true,
@@ -140,6 +179,10 @@ router.post('/shopier-callback', async (req, res) => {
     } else {
       // Payment failed
       console.log(`Payment failed for order: ${platform_order_id}`);
+      
+      order.status = 'cancelled';
+      order.paymentStatus = 'failed';
+      await order.save();
       
       res.json({
         success: false,

@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IOrderItem {
-  product: mongoose.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
   title: string;
   price: number;
   quantity: number;
@@ -11,30 +11,36 @@ export interface IOrderItem {
 }
 
 export interface IOrder extends Document {
-  orderNo: string;
-  userId?: mongoose.Types.ObjectId;
-  items: IOrderItem[];
+  orderId: string;
+  userId: mongoose.Types.ObjectId;
+  customerInfo: {
+    name: string;
+    email: string;
+    phone: string;
+    tcNo?: string;
+  };
   shippingAddress: {
-    fullName: string;
-    address: string;
+    fullAddress: string;
     city: string;
     district: string;
-    postalCode: string;
-    phone: string;
+    postalCode?: string;
   };
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
-  orderStatus: 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
-  subtotal: number;
-  shippingCost: number;
+  items: IOrderItem[];
   totalAmount: number;
-  paymentMethod: string;
+  shippingCost: number;
+  finalAmount: number;
+  status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod: 'shopier' | 'cash' | 'transfer';
+  shopierPaymentId?: string;
+  trackingNumber?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const orderItemSchema = new Schema<IOrderItem>({
-  product: {
+const orderItemSchema = new Schema({
+  productId: {
     type: Schema.Types.ObjectId,
     ref: 'Product',
     required: true
@@ -45,8 +51,7 @@ const orderItemSchema = new Schema<IOrderItem>({
   },
   price: {
     type: Number,
-    required: true,
-    min: 0
+    required: true
   },
   quantity: {
     type: Number,
@@ -68,52 +73,83 @@ const orderItemSchema = new Schema<IOrderItem>({
 });
 
 const orderSchema = new Schema<IOrder>({
-  orderNo: {
+  orderId: {
     type: String,
     required: true,
     unique: true
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
+  },
+  customerInfo: {
+    name: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String,
+      required: true
+    },
+    phone: {
+      type: String,
+      required: true
+    },
+    tcNo: {
+      type: String
+    }
+  },
+  shippingAddress: {
+    fullAddress: {
+      type: String,
+      required: true
+    },
+    city: {
+      type: String,
+      required: true
+    },
+    district: {
+      type: String,
+      required: true
+    },
+    postalCode: {
+      type: String
+    }
   },
   items: [orderItemSchema],
-  shippingAddress: {
-    fullName: { type: String, required: true },
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    district: { type: String, required: true },
-    postalCode: { type: String, required: true },
-    phone: { type: String, required: true }
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'paid', 'failed', 'refunded'],
-    default: 'pending'
-  },
-  orderStatus: {
-    type: String,
-    enum: ['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending'
-  },
-  subtotal: {
+  totalAmount: {
     type: Number,
-    required: true,
-    min: 0
+    required: true
   },
   shippingCost: {
     type: Number,
-    required: true,
-    min: 0
+    default: 0
   },
-  totalAmount: {
+  finalAmount: {
     type: Number,
-    required: true,
-    min: 0
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'],
+    default: 'pending'
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'completed', 'failed', 'refunded'],
+    default: 'pending'
   },
   paymentMethod: {
     type: String,
-    required: true
+    enum: ['shopier', 'cash', 'transfer'],
+    default: 'shopier'
+  },
+  shopierPaymentId: {
+    type: String
+  },
+  trackingNumber: {
+    type: String
   },
   notes: {
     type: String
@@ -122,14 +158,11 @@ const orderSchema = new Schema<IOrder>({
   timestamps: true
 });
 
-// Generate order number before saving
-orderSchema.pre('save', async function(next) {
-  if (!this.orderNo) {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    this.orderNo = `ECO${timestamp.slice(-6)}${random}`;
-  }
-  next();
-});
+// Index for faster queries
+orderSchema.index({ userId: 1, createdAt: -1 });
+orderSchema.index({ orderId: 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ paymentStatus: 1 });
 
-export default mongoose.model<IOrder>('Order', orderSchema);
+export const Order = mongoose.model<IOrder>('Order', orderSchema);
+export default Order;
