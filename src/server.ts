@@ -42,7 +42,7 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://your-plesk-domain.com', 'https://www.your-plesk-domain.com']
+    ? ['https://karakustech.com', 'https://www.karakustech.com']
     : true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
