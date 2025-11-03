@@ -61,9 +61,13 @@ router.post('/create-shopier-payment', async (req, res) => {
     // Format amount (ensure decimal format with dot)
     const formattedAmount = parseFloat(amount).toFixed(2);
 
+    // Clean address (remove newlines and extra spaces)
+    const cleanAddress = address.replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+
     console.log('Cleaned data:', {
       cleanPhone,
-      formattedAmount
+      formattedAmount,
+      cleanAddress
     });
 
     // Prepare Shopier payment data
@@ -78,7 +82,7 @@ router.post('/create-shopier-payment', async (req, res) => {
       buyer_email: email,
       buyer_account_age: '1',
       buyer_id_nr: '',
-      buyer_address: address,
+      buyer_address: cleanAddress,
       total_amount: formattedAmount,
       currency: 'TL',
       platform: '1',
@@ -89,8 +93,8 @@ router.post('/create-shopier-payment', async (req, res) => {
       callback_url: `https://karakus-website-backend.onrender.com/api/payment/shopier-callback`,
       cancel_url: `https://karakustech.com/payment/fail`,
       success_url: `https://karakustech.com/payment/success`,
-      shipping_address: `${address}, ${town}/${city}`,
-      billing_address: `${address}, ${town}/${city}`
+      shipping_address: `${cleanAddress}, ${town}/${city}`,
+      billing_address: `${cleanAddress}, ${town}/${city}`
     };
 
     console.log('Shopier data prepared:', shopierData);
