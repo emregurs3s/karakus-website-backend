@@ -358,8 +358,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-export default router;// Or
-der Management Routes
+// Order Management Routes
 import Order from '../models/Order.js';
 
 // GET /api/admin/orders - Get all orders for admin
@@ -450,3 +449,5 @@ router.patch('/orders/:orderId/status', async (req, res) => {
     });
   }
 });
+ex
+port default router;
