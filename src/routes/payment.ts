@@ -13,12 +13,20 @@ const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '1';
 // POST /api/payment/create-shopier-payment
 router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
   try {
+    console.log('Payment request received:', req.body);
+    
     const { 
       cartItems, 
       totalAmount, 
       customerInfo,
       shippingAddress 
     } = req.body;
+    
+    console.log('Shopier Config:', {
+      API_KEY: SHOPIER_API_KEY,
+      API_SECRET: SHOPIER_API_SECRET ? 'SET' : 'NOT SET',
+      WEBSITE_INDEX: SHOPIER_WEBSITE_INDEX
+    });
 
     // Generate unique order ID
     const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -63,7 +71,7 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
       buyer_phone: customerInfo.phone,
       buyer_email: customerInfo.email,
       buyer_account_age: '1', // Hesap yaşı (gün)
-      buyer_id_nr: customerInfo.tcNo || '',
+      buyer_id_nr: '', // TC kimlik no kaldırıldı
       buyer_address: shippingAddress.fullAddress,
       total_amount: finalAmount.toString(),
       currency: 'TL',
