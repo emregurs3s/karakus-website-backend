@@ -1,10 +1,42 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Rate limiting for login attempts - Brute force koruması
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 5, // 15 dakikada maksimum 5 deneme
+  message: {
+    success: false,
+    message: 'Çok fazla giriş denemesi yaptınız. Lütfen 15 dakika sonra tekrar deneyin.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // IP bazlı takip
+  keyGenerator: (req) => {
+    return req.ip || req.headers['x-forwarded-for'] as string || 'unknown';
+  }
+});
+
+// Rate limiting for registration - Spam koruması
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 saat
+  max: 3, // 1 saatte maksimum 3 kayıt
+  message: {
+    success: false,
+    message: 'Çok fazla kayıt denemesi yaptınız. Lütfen 1 saat sonra tekrar deneyin.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.headers['x-forwarded-for'] as string || 'unknown';
+  }
+});
 
 // Validation schemas
 const registerSchema = z.object({
@@ -19,7 +51,7 @@ const loginSchema = z.object({
 });
 
 // POST /api/auth/register - Register user
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
     
@@ -79,7 +111,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login - Login user
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const validatedData = loginSchema.parse(req.body);
     

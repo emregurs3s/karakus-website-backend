@@ -358,4 +358,95 @@ router.get('/users', async (req, res) => {
   }
 });
 
-export default router;
+export default router;// Or
+der Management Routes
+import Order from '../models/Order.js';
+
+// GET /api/admin/orders - Get all orders for admin
+router.get('/orders', async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, search } = req.query;
+    
+    const query: any = {};
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { orderId: { $regex: search, $options: 'i' } },
+        { 'shippingAddress.fullName': { $regex: search, $options: 'i' } },
+        { 'shippingAddress.phone': { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const skip = (Number(page) - 1) * Number(limit);
+    
+    const [orders, total] = await Promise.all([
+      Order.find(query)
+        .populate('user', 'name email')
+        .populate('items.product', 'title images')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Order.countDocuments(query)
+    ]);
+    
+    res.json({
+      success: true,
+      data: orders,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page),
+      total
+    });
+  } catch (error) {
+    console.error('Get admin orders error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Siparişler alınırken hata oluştu'
+    });
+  }
+});
+
+// PATCH /api/admin/orders/:orderId/status - Update order status
+router.patch('/orders/:orderId/status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    
+    const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçersiz sipariş durumu'
+      });
+    }
+    
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status, updatedAt: new Date() },
+      { new: true }
+    ).populate('user', 'name email')
+     .populate('items.product', 'title images');
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sipariş bulunamadı'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Sipariş durumu güncellendi',
+      data: order
+    });
+  } catch (error) {
+    console.error('Update order status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sipariş durumu güncellenirken hata oluştu'
+    });
+  }
+});

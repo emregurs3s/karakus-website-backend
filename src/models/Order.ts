@@ -17,7 +17,6 @@ export interface IOrder extends Document {
     name: string;
     email: string;
     phone: string;
-    tcNo?: string;
   };
   shippingAddress: {
     fullAddress: string;
@@ -95,9 +94,6 @@ const orderSchema = new Schema({
     phone: {
       type: String,
       required: true
-    },
-    tcNo: {
-      type: String
     }
   },
   shippingAddress: {

@@ -80,8 +80,8 @@ router.get('/:orderId', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/orders/:orderId/status - Update order status (Admin only)
-router.put('/:orderId/status', authenticateToken, requireAdmin, async (req, res) => {
+// PATCH /api/orders/:orderId/status - Update order status (Admin only)
+router.patch('/:orderId/status', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status, trackingNumber, notes } = req.body;
@@ -115,64 +115,6 @@ router.put('/:orderId/status', authenticateToken, requireAdmin, async (req, res)
   }
 });
 
-// GET /api/orders/admin/all - Get all orders (Admin only)
-router.get('/admin/all', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { page = 1, limit = 20, status, search } = req.query;
-    
-    const query: any = {};
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    if (search) {
-      query.$or = [
-        { orderId: { $regex: search, $options: 'i' } },
-        { 'customerInfo.name': { $regex: search, $options: 'i' } },
-        { 'customerInfo.email': { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    const orders = await Order.find(query)
-      .sort({ createdAt: -1 })
-      .limit(Number(limit) * 1)
-      .skip((Number(page) - 1) * Number(limit))
-      .populate('userId', 'name email')
-      .populate('items.productId', 'title slug');
-    
-    const total = await Order.countDocuments(query);
-    
-    // Order statistics
-    const stats = await Order.aggregate([
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 },
-          totalAmount: { $sum: '$finalAmount' }
-        }
-      }
-    ]);
-    
-    res.json({
-      success: true,
-      data: {
-        orders,
-        stats,
-        pagination: {
-          page: Number(page),
-          limit: Number(limit),
-          total,
-          pages: Math.ceil(total / Number(limit))
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Get admin orders error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Siparişler alınırken hata oluştu'
-    });
-  }
-});
+
 
 export default router;

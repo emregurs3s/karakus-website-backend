@@ -63,7 +63,7 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
       buyer_phone: customerInfo.phone,
       buyer_email: customerInfo.email,
       buyer_account_age: '1', // Hesap yaşı (gün)
-      buyer_id_nr: customerInfo.tcNo || '',
+      buyer_id_nr: '', // TC kimlik no kaldırıldı
       buyer_address: shippingAddress.fullAddress,
       total_amount: finalAmount.toString(),
       currency: 'TL',

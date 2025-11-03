@@ -59,7 +59,7 @@ const seedData = async () => {
         description: 'BU ÜRÜNÜ ALARAK ÇEKİLİŞE BİR HAK KAZANABİLİRSİNİZ NE KADAR ALIRSANIZ B…',
         price: 150,
         originalPrice: 160,
-        images: ['https://github.com/emregurs3s/karakus-images/raw/main/products/product1.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/sarj-kablosu.jpg'],
         category: sarjAletleriCategory,
         colors: [],
         sizes: ['Standart'],
@@ -77,7 +77,7 @@ const seedData = async () => {
         description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
         price: 700,
         originalPrice: 799,
-        images: ['https://github.com/emregurs3s/karakus-images/raw/main/products/product1.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/magsafe-powerbank.jpg'],
         category: powerbankCategory,
         colors: [],
         sizes: ['10000mAh'],
@@ -95,7 +95,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['https://github.com/emregurs3s/karakus-images/raw/main/products/product.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/airpods-max.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -113,7 +113,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['https://github.com/emregurs3s/karakus-images/raw/main/products/product.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/airpods-pro.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -130,11 +130,11 @@ const seedData = async () => {
     await Product.insertMany(products);
     console.log('Products inserted');
 
-    // Create admin user
+    // Create admin user - GÜÇLÜ ŞİFRE KULLANIN!
     const adminUser = new User({
-      name: 'Admin',
+      name: 'karakustech',
       email: 'admin@karakustech.com',
-      password: 'admin123',
+      password: 'aliqq123456789AEK', // Güçlü şifre
       roles: ['admin', 'user']
     });
     await adminUser.save();
@@ -151,13 +151,22 @@ const seedData = async () => {
     console.log('Regular user created');
 
     console.log('✅ Seed data inserted successfully!');
-    console.log('👤 Admin: admin@karakustech.com / admin123');
+    console.log('👤 Admin: admin@karakustech.com / [ŞİFRE GİZLİ]');
     console.log('👤 User: user@karakustech.com / user123');
+
+    // Close connection and exit
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed');
     process.exit(0);
   } catch (error) {
     console.error('❌ Seed data error:', error);
+    await mongoose.connection.close();
     process.exit(1);
   }
 };
 
+// Export for use in endpoint
+export default seedData;
+
+// Run directly if this file is executed
 seedData();

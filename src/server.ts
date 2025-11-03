@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
 import dotenv from 'dotenv';
 import path from 'path';
 import connectDB from './config/database.js';
@@ -59,6 +60,14 @@ app.use(morgan('combined'));
 app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Güvenlik: NoSQL injection koruması
+app.use(mongoSanitize({
+  replaceWith: '_',
+  onSanitize: ({ req, key }) => {
+    console.warn(`⚠️ NoSQL injection attempt detected: ${key} from IP: ${req.ip}`);
+  }
+}));
 
 // Global preflight handler
 app.options('*', (req, res) => {
@@ -121,6 +130,26 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// Seed endpoint for development/production
+app.get('/api/seed', async (req, res) => {
+  try {
+    // Import seed function dynamically
+    const { default: runSeed } = await import('./scripts/seedData.js');
+    await runSeed();
+    res.json({
+      success: true,
+      message: 'Database seeded successfully'
+    });
+  } catch (error) {
+    console.error('Seed error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Seed failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 });
 
 // API Routes
