@@ -11,102 +11,112 @@ const SHOPIER_API_SECRET = process.env.SHOPIER_API_SECRET || 'your-shopier-api-s
 const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '1';
 
 // POST /api/payment/create-shopier-payment
-router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
+router.post('/create-shopier-payment', async (req, res) => {
   try {
-    console.log('Payment request received:', req.body);
-    
-    const { 
-      cartItems, 
-      totalAmount, 
-      customerInfo,
-      shippingAddress 
+    console.log('=== PAYMENT REQUEST RECEIVED ===');
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Headers:', req.headers);
+
+    const {
+      amount,
+      orderId,
+      productName,
+      name,
+      email,
+      phone,
+      address,
+      city,
+      town
     } = req.body;
-    
+
+    // Validate required fields
+    if (!amount || !orderId || !productName || !name || !email || !phone || !address || !city || !town) {
+      console.error('Missing required fields:', { amount, orderId, productName, name, email, phone, address, city, town });
+      return res.status(400).json({
+        success: false,
+        message: 'Eksik alan var',
+        missing: {
+          amount: !amount,
+          orderId: !orderId,
+          productName: !productName,
+          name: !name,
+          email: !email,
+          phone: !phone,
+          address: !address,
+          city: !city,
+          town: !town
+        }
+      });
+    }
+
     console.log('Shopier Config:', {
-      API_KEY: SHOPIER_API_KEY,
+      API_KEY: SHOPIER_API_KEY ? 'SET' : 'NOT SET',
       API_SECRET: SHOPIER_API_SECRET ? 'SET' : 'NOT SET',
       WEBSITE_INDEX: SHOPIER_WEBSITE_INDEX
     });
 
-    // Generate unique order ID
-    const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Clean phone number (remove mask characters)
+    const cleanPhone = phone.replace(/[\s\(\)\-]/g, '');
     
-    // Calculate shipping cost
-    const shippingCost = totalAmount >= 500 ? 0 : 29.90;
-    const finalAmount = totalAmount + shippingCost;
-    
-    // Create order in database
-    const order = new Order({
-      orderId,
-      userId: (req as any).user.userId,
-      customerInfo,
-      shippingAddress,
-      items: cartItems.map((item: any) => ({
-        productId: item.productId || item.id,
-        title: item.title,
-        price: item.price,
-        quantity: item.quantity,
-        color: item.color,
-        size: item.size,
-        image: item.image
-      })),
-      totalAmount,
-      shippingCost,
-      finalAmount,
-      status: 'pending',
-      paymentStatus: 'pending',
-      paymentMethod: 'shopier'
+    // Format amount (ensure decimal format with dot)
+    const formattedAmount = parseFloat(amount).toFixed(2);
+
+    console.log('Cleaned data:', {
+      cleanPhone,
+      formattedAmount
     });
-    
-    await order.save();
-    
+
     // Prepare Shopier payment data
     const shopierData = {
       API_key: SHOPIER_API_KEY,
       website_index: SHOPIER_WEBSITE_INDEX,
       platform_order_id: orderId,
-      product_name: `Karakuş Tech - Sipariş #${orderId}`,
-      product_type: '1', // 1 = Fiziksel ürün
-      buyer_name: customerInfo.name,
-      buyer_phone: customerInfo.phone,
-      buyer_email: customerInfo.email,
-      buyer_account_age: '1', // Hesap yaşı (gün)
-      buyer_id_nr: '', // TC kimlik no kaldırıldı
-      buyer_address: shippingAddress.fullAddress,
-      total_amount: finalAmount.toString(),
+      product_name: productName,
+      product_type: '1',
+      buyer_name: name,
+      buyer_phone: cleanPhone,
+      buyer_email: email,
+      buyer_account_age: '1',
+      buyer_id_nr: '',
+      buyer_address: address,
+      total_amount: formattedAmount,
       currency: 'TL',
-      platform: '1', // 1 = Web
+      platform: '1',
       is_in_frame: '0',
       current_language: 'tr',
       modul_version: '1.0',
-      random_nr: Math.random().toString(36).substr(2, 9),
-      
-      // Callback URLs
+      random_nr: Math.random().toString(36).substring(2, 11),
       callback_url: `https://karakus-website-backend.onrender.com/api/payment/shopier-callback`,
-      cancel_url: `${process.env.FRONTEND_URL}/payment/fail`,
-      success_url: `${process.env.FRONTEND_URL}/payment/success`,
-      
-      // Shipping info
-      shipping_address: shippingAddress.fullAddress,
-      billing_address: shippingAddress.fullAddress,
+      cancel_url: `https://karakustech.com/payment/fail`,
+      success_url: `https://karakustech.com/payment/success`,
+      shipping_address: `${address}, ${town}/${city}`,
+      billing_address: `${address}, ${town}/${city}`
     };
+
+    console.log('Shopier data prepared:', shopierData);
 
     // Generate signature for Shopier
     const signatureString = Object.keys(shopierData)
       .sort()
       .map(key => `${key}=${shopierData[key as keyof typeof shopierData]}`)
       .join('&');
-    
+
+    console.log('Signature string:', signatureString);
+
     const signature = crypto
       .createHmac('sha256', SHOPIER_API_SECRET)
       .update(signatureString)
       .digest('hex');
+
+    console.log('Signature generated:', signature);
 
     // Add signature to data
     const finalData = {
       ...shopierData,
       signature
     };
+
+    console.log('=== PAYMENT DATA READY ===');
 
     // Return payment form data
     res.json({
@@ -119,10 +129,13 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Shopier payment creation error:', error);
+    console.error('=== SHOPIER PAYMENT ERROR ===');
+    console.error('Error:', error);
+    console.error('Stack:', error instanceof Error ? error.stack : 'No stack');
     res.status(500).json({
       success: false,
-      message: 'Ödeme oluşturulurken hata oluştu'
+      message: 'Ödeme oluşturulurken hata oluştu',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -130,80 +143,82 @@ router.post('/create-shopier-payment', authenticateToken, async (req, res) => {
 // POST /api/payment/shopier-callback - Shopier callback handler
 router.post('/shopier-callback', async (req, res) => {
   try {
-    const callbackData = req.body;
-    
+    console.log('=== SHOPIER CALLBACK RECEIVED ===');
+    console.log('Body:', req.body);
+
+    const callbackData = { ...req.body };
+
     // Verify signature
     const receivedSignature = callbackData.signature;
     delete callbackData.signature;
-    
+
     const signatureString = Object.keys(callbackData)
       .sort()
       .map(key => `${key}=${callbackData[key]}`)
       .join('&');
-    
+
     const expectedSignature = crypto
       .createHmac('sha256', SHOPIER_API_SECRET)
       .update(signatureString)
       .digest('hex');
 
+    console.log('Signature verification:', {
+      received: receivedSignature,
+      expected: expectedSignature,
+      match: receivedSignature === expectedSignature
+    });
+
     if (receivedSignature !== expectedSignature) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid signature'
-      });
+      console.error('Signature mismatch!');
+      return res.status(200).send('OK'); // Shopier still expects 200
     }
 
     // Process payment result
-    const { 
-      platform_order_id, 
-      payment_status, 
-      payment_id,
-      total_amount 
+    const {
+      platform_order_id,
+      payment_status,
+      payment_id
     } = callbackData;
+
+    console.log('Payment info:', {
+      orderId: platform_order_id,
+      status: payment_status,
+      paymentId: payment_id
+    });
 
     // Update order in database
     const order = await Order.findOne({ orderId: platform_order_id });
-    
+
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+      console.error('Order not found:', platform_order_id);
+      return res.status(200).send('OK'); // Still return 200 to Shopier
     }
 
     if (payment_status === '1') {
       // Payment successful
-      console.log(`Payment successful for order: ${platform_order_id}`);
-      
+      console.log(`✅ Payment successful for order: ${platform_order_id}`);
+
       order.status = 'paid';
       order.paymentStatus = 'completed';
       order.shopierPaymentId = payment_id;
       await order.save();
-      
-      res.json({
-        success: true,
-        message: 'Payment processed successfully'
-      });
     } else {
       // Payment failed
-      console.log(`Payment failed for order: ${platform_order_id}`);
-      
+      console.log(`❌ Payment failed for order: ${platform_order_id}`);
+
       order.status = 'cancelled';
       order.paymentStatus = 'failed';
       await order.save();
-      
-      res.json({
-        success: false,
-        message: 'Payment failed'
-      });
     }
 
+    // IMPORTANT: Shopier requires 200 OK response
+    res.status(200).send('OK');
+
   } catch (error) {
-    console.error('Shopier callback error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Callback processing error'
-    });
+    console.error('=== SHOPIER CALLBACK ERROR ===');
+    console.error('Error:', error);
+    // Still return 200 to prevent Shopier from retrying
+    res.status(200).send('OK');
   }
 });
 
@@ -211,10 +226,10 @@ router.post('/shopier-callback', async (req, res) => {
 router.get('/verify/:orderId', authenticateToken, async (req, res) => {
   try {
     const { orderId } = req.params;
-    
+
     // Here you would check the order status in your database
     // For now, returning a mock response
-    
+
     res.json({
       success: true,
       data: {

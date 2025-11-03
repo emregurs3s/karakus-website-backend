@@ -49,7 +49,7 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://karakustech.com', 'https://www.karakustech.com']
+    ? ['https://karakustech.com', 'https://www.karakustech.com', 'https://www.shopier.com']
     : true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
@@ -59,7 +59,7 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' })); // Shopier için extended: false
 
 // Güvenlik: NoSQL injection koruması
 app.use(mongoSanitize({
@@ -98,7 +98,7 @@ app.use('/uploads', (req, res, next) => {
   res.header('Vary', 'Origin');
 
   next();
-}, express.static(process.env.NODE_ENV === 'production' 
+}, express.static(process.env.NODE_ENV === 'production'
   ? path.join('/tmp', 'uploads')
   : path.join(process.cwd(), 'uploads'), {
   // Static file options
@@ -128,7 +128,28 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      SHOPIER_API_KEY: process.env.SHOPIER_API_KEY ? 'SET' : 'NOT SET',
+      SHOPIER_API_SECRET: process.env.SHOPIER_API_SECRET ? 'SET' : 'NOT SET',
+      SHOPIER_WEBSITE_INDEX: process.env.SHOPIER_WEBSITE_INDEX || 'NOT SET'
+    }
+  });
+});
+
+// API Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      SHOPIER_API_KEY: process.env.SHOPIER_API_KEY ? 'SET' : 'NOT SET',
+      SHOPIER_API_SECRET: process.env.SHOPIER_API_SECRET ? 'SET' : 'NOT SET',
+      SHOPIER_WEBSITE_INDEX: process.env.SHOPIER_WEBSITE_INDEX || 'NOT SET'
+    }
   });
 });
 
