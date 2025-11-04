@@ -58,7 +58,8 @@ router.post('/forgot', async (req, res) => {
       });
 
       await transporter.sendMail({
-        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@karakustech.com',
+        from: `"Karakuş Tech" <${process.env.SENDGRID_FROM_EMAIL || 'karakusali881@gmail.com'}>`,
+        replyTo: 'karakusali881@gmail.com',
         to: email,
         subject: 'Şifre Sıfırlama - Karakuş Tech',
         html: `
