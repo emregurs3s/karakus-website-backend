@@ -426,8 +426,8 @@ router.patch('/orders/:orderId/status', async (req, res) => {
       orderId,
       { status, updatedAt: new Date() },
       { new: true }
-    ).populate('user', 'name email')
-     .populate('items.product', 'title images');
+    ).populate('userId', 'name email')
+     .populate('items.productId', 'title images');
     
     if (!order) {
       return res.status(404).json({
