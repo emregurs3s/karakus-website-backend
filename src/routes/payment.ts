@@ -100,7 +100,9 @@ router.get('/create-shopier-payment', async (req, res) => {
       'signature': signature,
       'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
       'cancel_url': 'https://karakustech.com/payment/fail',
-      'success_url': 'https://karakustech.com/payment/success'
+      'success_url': 'https://karakustech.com/payment/success',
+      'shipping_address': `${cleanAddress}, ${town}/${city}`,
+      'billing_address': `${cleanAddress}, ${town}/${city}`
     };
 
     console.log('=== SHOPIER FORM DATA ===');
@@ -186,35 +188,39 @@ ${formInputs}
 });
 
 // POST /api/payment/shopier-callback
-router.post('/shopier-callback', async (req, res) => {
-  try {
-    console.log('=== SHOPIER CALLBACK ===');
-    console.log('Body:', req.body);
+router.post('/shopier-callback', (req, res) => {
+  // HEMEN 200 dön (Shopier timeout'u sıkı)
+  res.status(200).send('OK');
 
-    const { platform_order_id, payment_status, payment_id } = req.body;
+  // Arka planda işle
+  setImmediate(async () => {
+    try {
+      console.log('=== SHOPIER CALLBACK ===');
+      console.log('Body:', req.body);
 
-    const order = await Order.findOne({ orderId: platform_order_id });
+      const { platform_order_id, payment_status, payment_id } = req.body;
 
-    if (order) {
-      if (payment_status === '1') {
-        order.status = 'paid';
-        order.paymentStatus = 'completed';
-        order.shopierPaymentId = payment_id;
-        console.log('✅ Payment successful');
+      const order = await Order.findOne({ orderId: platform_order_id });
+      
+      if (order) {
+        if (payment_status === '1') {
+          order.status = 'paid';
+          order.paymentStatus = 'completed';
+          order.shopierPaymentId = payment_id;
+          console.log('✅ Payment successful:', platform_order_id);
+        } else {
+          order.status = 'cancelled';
+          order.paymentStatus = 'failed';
+          console.log('❌ Payment failed:', platform_order_id);
+        }
+        await order.save();
       } else {
-        order.status = 'cancelled';
-        order.paymentStatus = 'failed';
-        console.log('❌ Payment failed');
+        console.log('⚠️ Order not found:', platform_order_id);
       }
-      await order.save();
+    } catch (error) {
+      console.error('Callback processing error:', error);
     }
-
-    res.status(200).send('OK');
-
-  } catch (error) {
-    console.error('Callback error:', error);
-    res.status(200).send('OK');
-  }
+  });
 });
 
 export default router;
