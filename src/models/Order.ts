@@ -31,7 +31,7 @@ export interface IOrder extends Document {
   finalAmount: number;
   status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
-  paymentMethod: 'shopier' | 'cash' | 'transfer';
+  paymentMethod: 'shopier' | 'cash' | 'transfer' | 'bank_transfer';
   shopierPaymentId?: string;
   trackingNumber?: string;
   notes?: string;
@@ -43,7 +43,7 @@ const orderItemSchema = new Schema({
   productId: {
     type: Schema.Types.ObjectId,
     ref: 'Product',
-    required: true
+    required: false
   },
   title: {
     type: String,
@@ -142,8 +142,8 @@ const orderSchema = new Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['shopier', 'cash', 'transfer'],
-    default: 'shopier'
+    enum: ['shopier', 'cash', 'transfer', 'bank_transfer'],
+    default: 'bank_transfer'
   },
   shopierPaymentId: {
     type: String

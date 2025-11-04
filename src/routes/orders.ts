@@ -19,7 +19,7 @@ router.post('/', authenticateToken, async (req, res) => {
       customerInfo,
       shippingAddress,
       items: items.map((item: any) => ({
-        productId: item.id,
+        productId: item.id || item.productId,
         title: item.title,
         price: item.price,
         quantity: item.quantity,
@@ -32,6 +32,13 @@ router.post('/', authenticateToken, async (req, res) => {
       finalAmount,
       status: 'pending',
       paymentStatus: 'pending',
+      paymentMethod: paymentMethod || 'bank_transfer'
+    });
+
+    console.log('Creating order:', {
+      orderId,
+      userId,
+      itemsCount: items.length,
       paymentMethod: paymentMethod || 'bank_transfer'
     });
 

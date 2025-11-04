@@ -1,6 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { z } from 'zod';
+import nodemailer from 'nodemailer';
 import User from '../models/User.js';
 
 const router = express.Router();
@@ -44,17 +45,15 @@ router.post('/forgot', async (req, res) => {
     console.log('Reset Link:', resetLink);
     console.log('Token expires in 1 hour');
 
-    // TODO: Send email with nodemailer
-    // For now, just log it
-    // Send email
+    // Send email with nodemailer
     try {
-      const nodemailer = require('nodemailer');
-      
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // true for 465, false for other ports
         auth: {
-          user: process.env.EMAIL_USER || 'emregurses06@gmail.com',
-          pass: process.env.EMAIL_PASS || '251800Emal'
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
         }
       });
 
