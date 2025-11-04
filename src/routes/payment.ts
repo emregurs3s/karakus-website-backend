@@ -36,13 +36,22 @@ router.get('/create-shopier-payment', async (req, res) => {
     console.log('Customer:', { name, email, phone });
     console.log('Address:', { address, city, town });
 
-    // Clean data
+    // Clean and validate data
     const cleanPhone = phone.replace(/[\s\(\)\-]/g, '');
-    const cleanAddress = (address || '').replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+    const cleanAddress = (address || 'Adres Bilgisi').replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+    const cleanCity = (city || 'İstanbul').trim();
+    const cleanTown = (town || 'Merkez').trim();
     const formattedAmount = parseFloat(amount).toFixed(2);
 
+    // Ensure address is at least 10 characters
+    const finalAddress = cleanAddress.length >= 10 ? cleanAddress : `${cleanAddress} ${cleanTown}/${cleanCity}`;
+    
+    // Format shipping/billing address properly
+    const fullAddress = `${finalAddress}, ${cleanTown}/${cleanCity}`.substring(0, 255);
+
     console.log('Cleaned Phone:', cleanPhone);
-    console.log('Cleaned Address:', cleanAddress);
+    console.log('Cleaned Address:', finalAddress);
+    console.log('Full Address:', fullAddress);
     console.log('Formatted Amount:', formattedAmount);
 
     // Random number
@@ -89,7 +98,7 @@ router.get('/create-shopier-payment', async (req, res) => {
       'buyer_email': email,
       'buyer_account_age': '1',
       'buyer_id_nr': '',
-      'buyer_address': cleanAddress || 'Adres',
+      'buyer_address': finalAddress,
       'total_amount': formattedAmount,
       'currency': 'TL',
       'platform': '1',
@@ -101,8 +110,8 @@ router.get('/create-shopier-payment', async (req, res) => {
       'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
       'cancel_url': 'https://karakustech.com/payment/fail',
       'success_url': 'https://karakustech.com/payment/success',
-      'shipping_address': `${cleanAddress}, ${town}/${city}`,
-      'billing_address': `${cleanAddress}, ${town}/${city}`
+      'shipping_address': fullAddress,
+      'billing_address': fullAddress
     };
 
     console.log('=== SHOPIER FORM DATA ===');
