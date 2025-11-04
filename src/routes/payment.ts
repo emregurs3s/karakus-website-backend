@@ -71,7 +71,7 @@ router.get('/create-shopier-payment', async (req, res) => {
       'modul_version': '1.0',
       'random_nr': randomNr,
       'signature': signature,
-      'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
+      'callback_url': 'https://karakustech.com/api/payment/shopier-callback',
       'cancel_url': 'https://karakustech.com',
       'success_url': 'https://karakustech.com'
     };
