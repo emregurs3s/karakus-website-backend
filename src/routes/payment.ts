@@ -28,17 +28,26 @@ router.get('/create-shopier-payment', async (req, res) => {
       return res.status(400).send('<h1>Hata</h1><p>Eksik bilgi</p>');
     }
 
-    console.log('=== SHOPIER PAYMENT ===');
+    console.log('=== SHOPIER PAYMENT REQUEST ===');
+    console.log('Raw Query Params:', req.query);
     console.log('Amount:', amount);
     console.log('Order ID:', orderId);
+    console.log('Product Name:', productName);
+    console.log('Customer:', { name, email, phone });
+    console.log('Address:', { address, city, town });
 
     // Clean data
     const cleanPhone = phone.replace(/[\s\(\)\-]/g, '');
     const cleanAddress = (address || '').replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
     const formattedAmount = parseFloat(amount).toFixed(2);
 
+    console.log('Cleaned Phone:', cleanPhone);
+    console.log('Cleaned Address:', cleanAddress);
+    console.log('Formatted Amount:', formattedAmount);
+
     // Random number
     const randomNr = Math.random().toString(36).substring(2, 11);
+    console.log('Random Number:', randomNr);
 
     // Shopier signature (official): base64(HMAC_SHA256(API_key + random_nr + total_amount + order_id, API_SECRET))
     const signatureString = `${SHOPIER_API_KEY}${randomNr}${formattedAmount}${orderId}`;
@@ -47,8 +56,12 @@ router.get('/create-shopier-payment', async (req, res) => {
       .update(signatureString)
       .digest('base64');
 
-    console.log('Signature string:', signatureString);
-    console.log('Signature:', signature);
+    console.log('=== SIGNATURE CALCULATION ===');
+    console.log('API Key:', SHOPIER_API_KEY);
+    console.log('API Secret:', SHOPIER_API_SECRET ? '***SET***' : 'NOT SET');
+    console.log('Website Index:', SHOPIER_WEBSITE_INDEX);
+    console.log('Signature String:', signatureString);
+    console.log('Signature (base64):', signature);
 
     // Shopier form fields (EXACT as documentation)
     const formFields = {
@@ -75,6 +88,10 @@ router.get('/create-shopier-payment', async (req, res) => {
       'cancel_url': 'https://karakustech.com',
       'success_url': 'https://karakustech.com'
     };
+
+    console.log('=== SHOPIER FORM DATA ===');
+    console.log(JSON.stringify(formFields, null, 2));
+    console.log('=== SENDING TO SHOPIER ===');
 
     // Create form HTML
     const formInputs = Object.entries(formFields)
