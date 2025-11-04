@@ -129,19 +129,57 @@ router.get('/create-shopier-payment', async (req, res) => {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    #error {
+      display: none;
+      color: red;
+      margin-top: 20px;
+      padding: 20px;
+      background: #ffe6e6;
+      border-radius: 5px;
+      max-width: 600px;
+    }
   </style>
 </head>
 <body>
   <div class="loader">
     <div class="spinner"></div>
     <p>Ödeme sayfasına yönlendiriliyorsunuz...</p>
+    <div id="error"></div>
   </div>
-  <form id="shopierForm" method="POST" action="https://www.shopier.com/ShowProduct/api_pay4.php">
+  <form id="shopierForm" method="POST" action="https://www.shopier.com/ShowProduct/api_pay4.php" target="shopierFrame">
 ${formInputs}
   </form>
+  <iframe name="shopierFrame" style="display:none;"></iframe>
   <script>
+    console.log('=== SHOPIER FORM SUBMISSION ===');
+    console.log('Form Data:', ${JSON.stringify(formFields)});
+    
+    // Submit form
     setTimeout(function() {
+      console.log('Submitting form to Shopier...');
       document.getElementById('shopierForm').submit();
+      
+      // Check for errors after 3 seconds
+      setTimeout(function() {
+        var frame = document.getElementsByName('shopierFrame')[0];
+        try {
+          var frameDoc = frame.contentDocument || frame.contentWindow.document;
+          var frameBody = frameDoc.body.innerHTML;
+          console.log('Shopier Response:', frameBody);
+          
+          if (frameBody.includes('500') || frameBody.includes('504') || frameBody.includes('Hata')) {
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').innerHTML = '<strong>HATA:</strong><br>' + frameBody.substring(0, 500);
+            console.error('Shopier Error:', frameBody);
+          } else {
+            // Success - redirect to Shopier page
+            window.location.href = frame.contentWindow.location.href;
+          }
+        } catch(e) {
+          console.log('Cannot read iframe (CORS) - probably redirected successfully');
+          console.log('Error:', e);
+        }
+      }, 3000);
     }, 500);
   </script>
 </body>
