@@ -24,110 +24,108 @@ router.get('/create-shopier-payment', async (req, res) => {
       town
     } = req.query as any;
 
-    // Validate
-    if (!amount || !orderId || !productName || !name || !email || !phone || !address || !city || !town) {
-      return res.status(400).send('<h1>Hata</h1><p>Eksik bilgi. Lütfen geri dönün ve formu doldurun.</p>');
+    if (!amount || !orderId || !name || !email || !phone) {
+      return res.status(400).send('<h1>Hata</h1><p>Eksik bilgi</p>');
     }
+
+    console.log('=== SHOPIER PAYMENT ===');
+    console.log('Amount:', amount);
+    console.log('Order ID:', orderId);
 
     // Clean data
     const cleanPhone = phone.replace(/[\s\(\)\-]/g, '');
-    const cleanAddress = address.replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+    const cleanAddress = (address || '').replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
     const formattedAmount = parseFloat(amount).toFixed(2);
 
-    // Generate random number
+    // Random number
     const randomNr = Math.random().toString(36).substring(2, 11);
 
-    // Shopier signature: HMAC_SHA256(API_key + random_nr + total_amount + order_id, API_SECRET)
-    const signatureData = `${SHOPIER_API_KEY}${randomNr}${formattedAmount}${orderId}`;
+    // Shopier signature (official): base64(HMAC_SHA256(API_key + random_nr + total_amount + order_id, API_SECRET))
+    const signatureString = `${SHOPIER_API_KEY}${randomNr}${formattedAmount}${orderId}`;
     const signature = crypto
       .createHmac('sha256', SHOPIER_API_SECRET)
-      .update(signatureData)
+      .update(signatureString)
       .digest('base64');
 
-    // Shopier form data
-    const shopierData = {
-      API_key: SHOPIER_API_KEY,
-      website_index: SHOPIER_WEBSITE_INDEX,
-      platform_order_id: orderId,
-      product_name: productName,
-      product_type: '1',
-      buyer_name: name,
-      buyer_phone: cleanPhone,
-      buyer_email: email,
-      buyer_account_age: '1',
-      buyer_id_nr: '',
-      buyer_address: cleanAddress,
-      total_amount: formattedAmount,
-      currency: 'TL',
-      platform: '1',
-      is_in_frame: '0',
-      current_language: 'tr',
-      modul_version: '1.0',
-      random_nr: randomNr,
-      signature: signature,
-      callback_url: 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
-      cancel_url: 'https://karakustech.com/payment/cancel',
-      success_url: 'https://karakustech.com/payment/success',
-      shipping_address: `${cleanAddress}, ${town}/${city}`,
-      billing_address: `${cleanAddress}, ${town}/${city}`
+    console.log('Signature string:', signatureString);
+    console.log('Signature:', signature);
+
+    // Shopier form fields (EXACT as documentation)
+    const formFields = {
+      'API_key': SHOPIER_API_KEY,
+      'website_index': SHOPIER_WEBSITE_INDEX,
+      'platform_order_id': orderId,
+      'product_name': productName || 'Sipariş',
+      'product_type': '1',
+      'buyer_name': name,
+      'buyer_phone': cleanPhone,
+      'buyer_email': email,
+      'buyer_account_age': '0',
+      'buyer_id_nr': '',
+      'buyer_address': cleanAddress || 'Adres',
+      'total_amount': formattedAmount,
+      'currency': 'TL',
+      'platform': '1',
+      'is_in_frame': '0',
+      'current_language': 'tr',
+      'modul_version': '1.0',
+      'random_nr': randomNr,
+      'signature': signature,
+      'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
+      'cancel_url': 'https://karakustech.com',
+      'success_url': 'https://karakustech.com'
     };
 
-    // Create HTML form
-    const formInputs = Object.entries(shopierData)
-      .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}">`)
-      .join('\n    ');
+    // Create form HTML
+    const formInputs = Object.entries(formFields)
+      .map(([key, value]) => `    <input type="hidden" name="${key}" value="${value}">`)
+      .join('\n');
 
     const html = `<!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ödeme Sayfasına Yönlendiriliyor</title>
+  <title>Ödeme</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      background: #f5f5f5;
     }
-    .container {
+    .loader {
       text-align: center;
-      color: white;
-      padding: 40px;
     }
     .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid white;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      width: 40px;
+      height: 40px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 30px;
+      margin: 0 auto 20px;
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    h1 { font-size: 28px; margin-bottom: 15px; }
-    p { font-size: 16px; opacity: 0.9; }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="loader">
     <div class="spinner"></div>
-    <h1>Ödeme Sayfasına Yönlendiriliyor</h1>
-    <p>Lütfen bekleyin...</p>
+    <p>Ödeme sayfasına yönlendiriliyorsunuz...</p>
   </div>
-  <form id="paymentForm" method="POST" action="https://www.shopier.com/ShowProduct/api_pay4.php">
-    ${formInputs}
+  <form id="shopierForm" method="POST" action="https://www.shopier.com/ShowProduct/api_pay4.php">
+${formInputs}
   </form>
   <script>
     setTimeout(function() {
-      document.getElementById('paymentForm').submit();
-    }, 1000);
+      document.getElementById('shopierForm').submit();
+    }, 500);
   </script>
 </body>
 </html>`;
@@ -136,7 +134,7 @@ router.get('/create-shopier-payment', async (req, res) => {
 
   } catch (error) {
     console.error('Payment error:', error);
-    res.status(500).send('<h1>Hata</h1><p>Bir hata oluştu. Lütfen tekrar deneyin.</p>');
+    res.status(500).send('<h1>Hata</h1><p>Bir hata oluştu</p>');
   }
 });
 
@@ -144,11 +142,10 @@ router.get('/create-shopier-payment', async (req, res) => {
 router.post('/shopier-callback', async (req, res) => {
   try {
     console.log('=== SHOPIER CALLBACK ===');
-    console.log('Data:', req.body);
+    console.log('Body:', req.body);
 
     const { platform_order_id, payment_status, payment_id } = req.body;
 
-    // Update order in database
     const order = await Order.findOne({ orderId: platform_order_id });
     
     if (order) {
@@ -156,16 +153,15 @@ router.post('/shopier-callback', async (req, res) => {
         order.status = 'paid';
         order.paymentStatus = 'completed';
         order.shopierPaymentId = payment_id;
-        console.log('✅ Payment successful:', platform_order_id);
+        console.log('✅ Payment successful');
       } else {
         order.status = 'cancelled';
         order.paymentStatus = 'failed';
-        console.log('❌ Payment failed:', platform_order_id);
+        console.log('❌ Payment failed');
       }
       await order.save();
     }
 
-    // Shopier requires 200 OK
     res.status(200).send('OK');
 
   } catch (error) {
