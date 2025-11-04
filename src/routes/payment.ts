@@ -11,6 +11,158 @@ const SHOPIER_API_KEY = process.env.SHOPIER_API_KEY || 'your-shopier-api-key';
 const SHOPIER_API_SECRET = process.env.SHOPIER_API_SECRET || 'your-shopier-api-secret';
 const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '1';
 
+// GET /api/payment/create-shopier-payment (for direct browser redirect)
+router.get('/create-shopier-payment', async (req, res) => {
+  try {
+    console.log('=== PAYMENT REQUEST RECEIVED (GET) ===');
+    console.log('Query:', req.query);
+
+    const {
+      amount,
+      orderId,
+      productName,
+      name,
+      email,
+      phone,
+      address,
+      city,
+      town
+    } = req.query as any;
+
+    // Validate required fields
+    if (!amount || !orderId || !productName || !name || !email || !phone || !address || !city || !town) {
+      return res.status(400).send('<h1>Eksik bilgi</h1><p>Lütfen ödeme sayfasına geri dönün ve tüm alanları doldurun.</p>');
+    }
+
+    console.log('Shopier Config:', {
+      API_KEY: SHOPIER_API_KEY ? 'SET' : 'NOT SET',
+      API_SECRET: SHOPIER_API_SECRET ? 'SET' : 'NOT SET',
+      WEBSITE_INDEX: SHOPIER_WEBSITE_INDEX
+    });
+
+    // Clean phone number (remove mask characters)
+    const cleanPhone = phone.replace(/[\s\(\)\-]/g, '');
+    
+    // Format amount (ensure decimal format with dot)
+    const formattedAmount = parseFloat(amount).toFixed(2);
+
+    // Clean address (remove newlines and extra spaces)
+    const cleanAddress = address.replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Generate random number for signature
+    const randomNr = Math.random().toString(36).substring(2, 11);
+
+    // Shopier signature: base64(HMAC_SHA256(random_nr + platform_order_id + total_amount + currency, API_SECRET))
+    const signatureData = `${randomNr}${orderId}${formattedAmount}TL`;
+    
+    const signature = crypto
+      .createHmac('sha256', SHOPIER_API_SECRET)
+      .update(signatureData)
+      .digest('base64');
+
+    // Prepare Shopier payment data
+    const shopierData = {
+      API_key: SHOPIER_API_KEY,
+      website_index: SHOPIER_WEBSITE_INDEX,
+      platform_order_id: orderId,
+      product_name: productName,
+      product_type: '1',
+      buyer_name: name,
+      buyer_phone: cleanPhone,
+      buyer_email: email,
+      buyer_account_age: '1',
+      buyer_id_nr: '',
+      buyer_address: cleanAddress,
+      total_amount: formattedAmount,
+      currency: 'TL',
+      platform: '1',
+      is_in_frame: '0',
+      current_language: 'tr',
+      modul_version: '1.0',
+      random_nr: randomNr,
+      signature: signature,
+      callback_url: `https://karakus-website-backend.onrender.com/api/payment/shopier-callback`,
+      cancel_url: `https://karakustech.com/payment/fail`,
+      success_url: `https://karakustech.com/payment/success`,
+      shipping_address: `${cleanAddress}, ${town}/${city}`,
+      billing_address: `${cleanAddress}, ${town}/${city}`
+    };
+
+    console.log('Shopier data prepared');
+    console.log('=== PAYMENT DATA READY ===');
+
+    // Create auto-submit HTML form for Shopier
+    const actionUrl = 'https://www.shopier.com/ShowProduct/api_pay4.php';
+    
+    const hiddenInputs = Object.entries(shopierData)
+      .map(([key, value]) => `<input type="hidden" name="${key}" value="${String(value)}">`)
+      .join('\n    ');
+
+    const html = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödeme Sayfasına Yönlendiriliyor...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .loader {
+      text-align: center;
+      color: white;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    h2 { margin: 0 0 10px; font-size: 24px; }
+    p { margin: 0; opacity: 0.9; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <h2>Ödeme Sayfasına Yönlendiriliyor</h2>
+    <p>Lütfen bekleyin...</p>
+  </div>
+  <form id="shopierForm" method="POST" action="${actionUrl}">
+    ${hiddenInputs}
+  </form>
+  <script>
+    // Auto-submit form after a brief delay
+    setTimeout(function() {
+      document.getElementById('shopierForm').submit();
+    }, 500);
+  </script>
+</body>
+</html>`;
+
+    console.log('Returning auto-submit HTML form');
+    res.set('Content-Type', 'text/html; charset=utf-8').status(200).send(html);
+
+  } catch (error) {
+    console.error('=== SHOPIER PAYMENT ERROR ===');
+    console.error('Error:', error);
+    res.status(500).send('<h1>Hata</h1><p>Ödeme işlemi başlatılırken bir hata oluştu. Lütfen tekrar deneyin.</p>');
+  }
+});
+
 // POST /api/payment/create-shopier-payment
 router.post('/create-shopier-payment', async (req, res) => {
   try {
@@ -116,16 +268,70 @@ router.post('/create-shopier-payment', async (req, res) => {
     console.log('Shopier data prepared:', shopierData);
     console.log('=== PAYMENT DATA READY ===');
 
-    // Shopier requires browser-based form submission (403 on server-to-server)
-    // Return form data for client-side submission
-    res.json({
-      success: true,
-      data: {
-        orderId,
-        shopierFormData: shopierData,
-        shopierUrl: 'https://www.shopier.com/ShowProduct/api_pay4.php'
-      }
-    });
+    // Create auto-submit HTML form for Shopier
+    const actionUrl = 'https://www.shopier.com/ShowProduct/api_pay4.php';
+    
+    const hiddenInputs = Object.entries(shopierData)
+      .map(([key, value]) => `<input type="hidden" name="${key}" value="${String(value)}">`)
+      .join('\n    ');
+
+    const html = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödeme Sayfasına Yönlendiriliyor...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .loader {
+      text-align: center;
+      color: white;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    h2 { margin: 0 0 10px; font-size: 24px; }
+    p { margin: 0; opacity: 0.9; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <h2>Ödeme Sayfasına Yönlendiriliyor</h2>
+    <p>Lütfen bekleyin...</p>
+  </div>
+  <form id="shopierForm" method="POST" action="${actionUrl}">
+    ${hiddenInputs}
+  </form>
+  <script>
+    // Auto-submit form after a brief delay
+    setTimeout(function() {
+      document.getElementById('shopierForm').submit();
+    }, 500);
+  </script>
+</body>
+</html>`;
+
+    console.log('Returning auto-submit HTML form');
+    res.set('Content-Type', 'text/html; charset=utf-8').status(200).send(html);
 
   } catch (error) {
     console.error('=== SHOPIER PAYMENT ERROR ===');
