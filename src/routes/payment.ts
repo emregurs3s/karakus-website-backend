@@ -71,7 +71,7 @@ router.get('/create-shopier-payment', async (req, res) => {
       'modul_version': '1.0',
       'random_nr': randomNr,
       'signature': signature,
-      'callback_url': 'https://karakustech.com/api/payment/shopier-callback',
+      'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
       'cancel_url': 'https://karakustech.com',
       'success_url': 'https://karakustech.com'
     };
@@ -147,7 +147,7 @@ router.post('/shopier-callback', async (req, res) => {
     const { platform_order_id, payment_status, payment_id } = req.body;
 
     const order = await Order.findOne({ orderId: platform_order_id });
-    
+
     if (order) {
       if (payment_status === '1') {
         order.status = 'paid';
