@@ -4,6 +4,58 @@ import Order from '../models/Order.js';
 
 const router = express.Router();
 
+// POST /api/orders - Create new order
+router.post('/', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user.userId;
+    const { customerInfo, shippingAddress, items, totalAmount, shippingCost, finalAmount, paymentMethod } = req.body;
+
+    // Generate order ID
+    const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
+    const order = new Order({
+      orderId,
+      userId,
+      customerInfo,
+      shippingAddress,
+      items: items.map((item: any) => ({
+        productId: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity,
+        color: item.color,
+        size: item.size,
+        image: item.image
+      })),
+      totalAmount,
+      shippingCost,
+      finalAmount,
+      status: 'pending',
+      paymentStatus: 'pending',
+      paymentMethod: paymentMethod || 'bank_transfer'
+    });
+
+    await order.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Sipariş başarıyla oluşturuldu',
+      data: {
+        order: {
+          orderId: order.orderId,
+          finalAmount: order.finalAmount
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Create order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Sipariş oluşturulurken hata oluştu'
+    });
+  }
+});
+
 // GET /api/orders - Get user's orders
 router.get('/', authenticateToken, async (req, res) => {
   try {
