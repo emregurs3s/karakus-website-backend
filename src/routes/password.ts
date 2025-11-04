@@ -46,23 +46,44 @@ router.post('/forgot', async (req, res) => {
 
     // TODO: Send email with nodemailer
     // For now, just log it
-    console.log(`
-      ===== ŞİFRE SIFIRLAMA EMAİLİ =====
-      Kime: ${email}
-      Konu: Şifre Sıfırlama
+    // Send email
+    try {
+      const nodemailer = require('nodemailer');
       
-      Merhaba,
-      
-      Şifrenizi sıfırlamak için aşağıdaki linke tıklayın:
-      ${resetLink}
-      
-      Bu link 1 saat geçerlidir.
-      
-      Eğer bu isteği siz yapmadıysanız, bu emaili görmezden gelebilirsiniz.
-      
-      Karakuş Tech
-      ===================================
-    `);
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER || 'emregurses06@gmail.com',
+          pass: process.env.EMAIL_PASS || '251800Emal'
+        }
+      });
+
+      await transporter.sendMail({
+        from: '"Karakuş Tech" <emregurses06@gmail.com>',
+        to: email,
+        subject: 'Şifre Sıfırlama - Karakuş Tech',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Şifre Sıfırlama</h2>
+            <p>Merhaba,</p>
+            <p>Şifrenizi sıfırlamak için aşağıdaki butona tıklayın:</p>
+            <a href="${resetLink}" style="display: inline-block; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+              Şifremi Sıfırla
+            </a>
+            <p>Veya bu linki kopyalayın: <a href="${resetLink}">${resetLink}</a></p>
+            <p style="color: #666; font-size: 14px;">Bu link 1 saat geçerlidir.</p>
+            <p style="color: #666; font-size: 14px;">Eğer bu isteği siz yapmadıysanız, bu emaili görmezden gelebilirsiniz.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #999; font-size: 12px;">Karakuş Tech</p>
+          </div>
+        `
+      });
+
+      console.log('✅ Password reset email sent to:', email);
+    } catch (emailError) {
+      console.error('Email send error:', emailError);
+      // Email gönderilemese bile devam et
+    }
 
     res.json({
       success: true,

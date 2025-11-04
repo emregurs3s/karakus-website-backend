@@ -201,7 +201,7 @@ router.post('/shopier-callback', (req, res) => {
       const { platform_order_id, payment_status, payment_id } = req.body;
 
       const order = await Order.findOne({ orderId: platform_order_id });
-      
+
       if (order) {
         if (payment_status === '1') {
           order.status = 'paid';
