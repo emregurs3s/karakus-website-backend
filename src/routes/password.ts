@@ -45,20 +45,20 @@ router.post('/forgot', async (req, res) => {
     console.log('Reset Link:', resetLink);
     console.log('Token expires in 1 hour');
 
-    // Send email with nodemailer
+    // Send email with nodemailer (SendGrid SMTP)
     try {
       const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+        host: 'smtp.sendgrid.net',
         port: 587,
-        secure: false, // true for 465, false for other ports
+        secure: false,
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
+          user: 'apikey', // SendGrid için her zaman 'apikey'
+          pass: process.env.SENDGRID_API_KEY
         }
       });
 
       await transporter.sendMail({
-        from: '"Karakuş Tech" <emregurses06@gmail.com>',
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@karakustech.com',
         to: email,
         subject: 'Şifre Sıfırlama - Karakuş Tech',
         html: `
