@@ -49,18 +49,20 @@ router.get('/create-shopier-payment', async (req, res) => {
     const randomNr = Math.random().toString(36).substring(2, 11);
     console.log('Random Number:', randomNr);
 
-    // Shopier signature (official): base64(HMAC_SHA256(API_key + random_nr + total_amount + order_id, API_SECRET))
-    const signatureString = `${SHOPIER_API_KEY}${randomNr}${formattedAmount}${orderId}`;
+    // Shopier signature: base64(HMAC_SHA256(random_nr + platform_order_id + total_amount + currency, API_SECRET))
+    // DOĞRU SIRA: random_nr → platform_order_id → total_amount → currency
+    // API_KEY EKLENMEZ!
+    const signatureData = `${randomNr}${orderId}${formattedAmount}TL`;
     const signature = crypto
       .createHmac('sha256', SHOPIER_API_SECRET)
-      .update(signatureString)
+      .update(signatureData)
       .digest('base64');
 
     console.log('=== SIGNATURE CALCULATION ===');
     console.log('API Key:', SHOPIER_API_KEY);
     console.log('API Secret:', SHOPIER_API_SECRET ? '***SET***' : 'NOT SET');
     console.log('Website Index:', SHOPIER_WEBSITE_INDEX);
-    console.log('Signature String:', signatureString);
+    console.log('Signature Data:', signatureData);
     console.log('Signature (base64):', signature);
 
     // Shopier form fields (EXACT as documentation)
