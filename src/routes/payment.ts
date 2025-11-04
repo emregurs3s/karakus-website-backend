@@ -7,7 +7,7 @@ const router = express.Router();
 // Shopier configuration
 const SHOPIER_API_KEY = process.env.SHOPIER_API_KEY || '';
 const SHOPIER_API_SECRET = process.env.SHOPIER_API_SECRET || '';
-const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '1';
+const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '2';
 
 // GET /api/payment/create-shopier-payment
 router.get('/create-shopier-payment', async (req, res) => {
@@ -84,7 +84,7 @@ router.get('/create-shopier-payment', async (req, res) => {
       'modul_version': '1.0',
       'random_nr': randomNr,
       'signature': signature,
-      'callback_url': 'https://karakustech.com/shopier-callback.php',
+      'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
       'cancel_url': 'https://karakustech.com',
       'success_url': 'https://karakustech.com'
     };
