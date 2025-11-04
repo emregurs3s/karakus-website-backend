@@ -77,12 +77,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: [
-          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0012.jpg',
-          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0015.jpg',
-          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.47.24_475323ac.jpg',
-          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.47.24_d47cafb5.jpg'
-        ],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0012.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -118,7 +113,12 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0014.jpg'],
+        images: [
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0014.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0015.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.47.24_475323ac.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.47.24_d47cafb5.jpg'
+        ],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
