@@ -13,13 +13,20 @@ router.post('/', authenticateToken, async (req, res) => {
     // Generate order ID
     const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
+    console.log('Order request:', {
+      userId,
+      itemsCount: items.length,
+      paymentMethod: paymentMethod || 'bank_transfer',
+      firstItem: items[0]
+    });
+
     const order = new Order({
       orderId,
       userId,
       customerInfo,
       shippingAddress,
       items: items.map((item: any) => ({
-        productId: item.id || item.productId,
+        productId: item.productId || item.id,
         title: item.title,
         price: item.price,
         quantity: item.quantity,
@@ -35,12 +42,7 @@ router.post('/', authenticateToken, async (req, res) => {
       paymentMethod: paymentMethod || 'bank_transfer'
     });
 
-    console.log('Creating order:', {
-      orderId,
-      userId,
-      itemsCount: items.length,
-      paymentMethod: paymentMethod || 'bank_transfer'
-    });
+    console.log('Order created successfully:', orderId);
 
     await order.save();
 
@@ -54,11 +56,13 @@ router.post('/', authenticateToken, async (req, res) => {
         }
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create order error:', error);
+    console.error('Error details:', error.message);
     res.status(500).json({
       success: false,
-      message: 'Sipariş oluşturulurken hata oluştu'
+      message: 'Sipariş oluşturulurken hata oluştu',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
