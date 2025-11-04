@@ -51,7 +51,7 @@ const seedData = async () => {
     const airpodsKulaklikCategory = insertedCategories.find(cat => cat.slug === 'airpods-kulaklik')?._id;
     const powerbankCategory = insertedCategories.find(cat => cat.slug === 'powerbank')?._id;
 
-    // Insert products - Sizin orijinal ürünleriniz
+    // Insert products - Güncel ürünleriniz
     const products = [
       {
         title: 'Orjinal iPhone Şarj Kablosu',
@@ -59,7 +59,7 @@ const seedData = async () => {
         description: 'BU ÜRÜNÜ ALARAK ÇEKİLİŞE BİR HAK KAZANABİLİRSİNİZ NE KADAR ALIRSANIZ B…',
         price: 150,
         originalPrice: 160,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/sarj-kablosu.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0011.jpg'],
         category: sarjAletleriCategory,
         colors: [],
         sizes: ['Standart'],
@@ -77,7 +77,7 @@ const seedData = async () => {
         description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
         price: 700,
         originalPrice: 799,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/magsafe-powerbank.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0012.jpg'],
         category: powerbankCategory,
         colors: [],
         sizes: ['10000mAh'],
@@ -95,7 +95,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/airpods-max.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0013.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -113,7 +113,7 @@ const seedData = async () => {
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/products/airpods-pro.jpg'],
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0014.jpg'],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
