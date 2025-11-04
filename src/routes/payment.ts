@@ -7,7 +7,7 @@ const router = express.Router();
 // Shopier configuration
 const SHOPIER_API_KEY = process.env.SHOPIER_API_KEY || '';
 const SHOPIER_API_SECRET = process.env.SHOPIER_API_SECRET || '';
-const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '2';
+const SHOPIER_WEBSITE_INDEX = process.env.SHOPIER_WEBSITE_INDEX || '1';
 
 // GET /api/payment/create-shopier-payment
 router.get('/create-shopier-payment', async (req, res) => {
@@ -65,17 +65,29 @@ router.get('/create-shopier-payment', async (req, res) => {
     console.log('Signature Data:', signatureData);
     console.log('Signature (base64):', signature);
 
+    // Escape HTML entities
+    const esc = (v: any = '') => String(v)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Normalize product name (remove NBSP and trim)
+    const safeProductName = String(productName || 'Sipariş')
+      .replace(/\u00A0/g, ' ')
+      .trim();
+
     // Shopier form fields (EXACT as documentation)
     const formFields = {
       'API_key': SHOPIER_API_KEY,
       'website_index': SHOPIER_WEBSITE_INDEX,
       'platform_order_id': orderId,
-      'product_name': productName || 'Sipariş',
+      'product_name': safeProductName,
       'product_type': '1',
       'buyer_name': name,
       'buyer_phone': cleanPhone,
       'buyer_email': email,
-      'buyer_account_age': '0',
+      'buyer_account_age': '1',
       'buyer_id_nr': '',
       'buyer_address': cleanAddress || 'Adres',
       'total_amount': formattedAmount,
@@ -87,24 +99,25 @@ router.get('/create-shopier-payment', async (req, res) => {
       'random_nr': randomNr,
       'signature': signature,
       'callback_url': 'https://karakus-website-backend.onrender.com/api/payment/shopier-callback',
-      'cancel_url': 'https://karakustech.com',
-      'success_url': 'https://karakustech.com'
+      'cancel_url': 'https://karakustech.com/payment/fail',
+      'success_url': 'https://karakustech.com/payment/success'
     };
 
     console.log('=== SHOPIER FORM DATA ===');
     console.log(JSON.stringify(formFields, null, 2));
     console.log('=== SENDING TO SHOPIER ===');
 
-    // Create form HTML
+    // Create form HTML with escaped values
     const formInputs = Object.entries(formFields)
-      .map(([key, value]) => `    <input type="hidden" name="${key}" value="${value}">`)
+      .map(([key, value]) => `    <input type="hidden" name="${esc(key)}" value="${esc(value)}">`)
       .join('\n');
 
     const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Ödeme</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödeme Sayfasına Yönlendiriliyor</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -153,18 +166,18 @@ ${formInputs}
   </form>
   <script>
     console.log('=== SHOPIER FORM SUBMISSION ===');
-    console.log('Form Data:', ${JSON.stringify(formFields)});
-    
-    // Submit form - direct redirect (no iframe)
-    setTimeout(function() {
-      console.log('Submitting form to Shopier...');
-      document.getElementById('shopierForm').submit();
-    }, 1000);
+    console.log('Submitting to Shopier...');
   </script>
 </body>
+<script>
+  // Auto-submit after page load
+  window.onload = function() {
+    document.getElementById('shopierForm').submit();
+  };
+</script>
 </html>`;
 
-    res.set('Content-Type', 'text/html; charset=utf-8').send(html);
+    res.status(200).set('Content-Type', 'text/html; charset=utf-8').send(html);
 
   } catch (error) {
     console.error('Payment error:', error);
