@@ -37,8 +37,8 @@ router.get('/create-shopier-payment', async (req, res) => {
     // Generate random number
     const randomNr = Math.random().toString(36).substring(2, 11);
 
-    // Shopier signature: base64(HMAC_SHA256(random_nr + order_id + amount + currency, secret))
-    const signatureData = `${randomNr}${orderId}${formattedAmount}TL`;
+    // Shopier signature: HMAC_SHA256(API_key + random_nr + total_amount + order_id, API_SECRET)
+    const signatureData = `${SHOPIER_API_KEY}${randomNr}${formattedAmount}${orderId}`;
     const signature = crypto
       .createHmac('sha256', SHOPIER_API_SECRET)
       .update(signatureData)
