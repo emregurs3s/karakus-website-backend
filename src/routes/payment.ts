@@ -114,108 +114,18 @@ router.post('/create-shopier-payment', async (req, res) => {
     };
 
     console.log('Shopier data prepared:', shopierData);
-    console.log('=== SENDING REQUEST TO SHOPIER ===');
+    console.log('=== PAYMENT DATA READY ===');
 
-    // Send POST request to Shopier API
-    try {
-      const shopierResponse = await axios.post(
-        'https://www.shopier.com/ShowProduct/api_pay4.php',
-        new URLSearchParams(shopierData as any).toString(),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          maxRedirects: 0,
-          validateStatus: (status: number) => status >= 200 && status < 400
-        }
-      );
-
-      console.log('Shopier response status:', shopierResponse.status);
-      console.log('Shopier response headers:', shopierResponse.headers);
-      console.log('Shopier response data:', shopierResponse.data);
-
-      // Check if Shopier returned a redirect URL
-      if (shopierResponse.headers.location) {
-        console.log('Shopier redirect URL:', shopierResponse.headers.location);
-        return res.json({
-          success: true,
-          data: {
-            orderId,
-            paymentUrl: shopierResponse.headers.location,
-            redirectType: 'url'
-          }
-        });
+    // Shopier requires browser-based form submission (403 on server-to-server)
+    // Return form data for client-side submission
+    res.json({
+      success: true,
+      data: {
+        orderId,
+        shopierFormData: shopierData,
+        shopierUrl: 'https://www.shopier.com/ShowProduct/api_pay4.php'
       }
-
-      // Check if response contains HTML with payment form
-      if (typeof shopierResponse.data === 'string' && shopierResponse.data.includes('form')) {
-        console.log('Shopier returned HTML form');
-        return res.json({
-          success: true,
-          data: {
-            orderId,
-            paymentHtml: shopierResponse.data,
-            redirectType: 'html'
-          }
-        });
-      }
-
-      // If response is JSON with payment URL
-      if (shopierResponse.data && shopierResponse.data.payment_url) {
-        console.log('Shopier payment URL:', shopierResponse.data.payment_url);
-        return res.json({
-          success: true,
-          data: {
-            orderId,
-            paymentUrl: shopierResponse.data.payment_url,
-            redirectType: 'url'
-          }
-        });
-      }
-
-      // Fallback: return form data for client-side submission
-      console.log('Using fallback: client-side form submission');
-      res.json({
-        success: true,
-        data: {
-          orderId,
-          shopierFormData: shopierData,
-          shopierUrl: 'https://www.shopier.com/ShowProduct/api_pay4.php',
-          redirectType: 'form'
-        }
-      });
-
-    } catch (shopierError: any) {
-      console.error('=== SHOPIER API ERROR ===');
-      console.error('Error:', shopierError.message);
-      console.error('Response:', shopierError.response?.data);
-      console.error('Status:', shopierError.response?.status);
-
-      // If Shopier returns 302 redirect, extract location
-      if (shopierError.response?.status === 302 && shopierError.response?.headers?.location) {
-        console.log('Shopier 302 redirect to:', shopierError.response.headers.location);
-        return res.json({
-          success: true,
-          data: {
-            orderId,
-            paymentUrl: shopierError.response.headers.location,
-            redirectType: 'url'
-          }
-        });
-      }
-
-      // Fallback to client-side form submission
-      console.log('Shopier API error, using fallback form submission');
-      res.json({
-        success: true,
-        data: {
-          orderId,
-          shopierFormData: shopierData,
-          shopierUrl: 'https://www.shopier.com/ShowProduct/api_pay4.php',
-          redirectType: 'form'
-        }
-      });
-    }
+    });
 
   } catch (error) {
     console.error('=== SHOPIER PAYMENT ERROR ===');
