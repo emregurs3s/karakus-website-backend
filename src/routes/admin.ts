@@ -383,8 +383,8 @@ router.get('/orders', async (req, res) => {
     
     const [orders, total] = await Promise.all([
       Order.find(query)
-        .populate('user', 'name email')
-        .populate('items.product', 'title images')
+        .populate('userId', 'name email')
+        .populate('items.productId', 'title images')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit)),
