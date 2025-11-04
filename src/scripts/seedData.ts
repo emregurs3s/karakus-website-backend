@@ -51,7 +51,7 @@ const seedData = async () => {
     const airpodsKulaklikCategory = insertedCategories.find(cat => cat.slug === 'airpods-kulaklik')?._id;
     const powerbankCategory = insertedCategories.find(cat => cat.slug === 'powerbank')?._id;
 
-    // Insert products - Güncel ürünleriniz
+    // Insert products - Tüm ürünleriniz
     const products = [
       {
         title: 'Orjinal iPhone Şarj Kablosu',
@@ -72,30 +72,17 @@ const seedData = async () => {
         reviewCount: 0
       },
       {
-        title: 'APPLE MAGSAFE POWERBANK',
-        slug: 'apple-magsafe-powerbank',
-        description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
-        price: 700,
-        originalPrice: 799,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0012.jpg'],
-        category: powerbankCategory,
-        colors: [],
-        sizes: ['10000mAh'],
-        stock: 20,
-        sku: 'Powerbank1',
-        isNew: true,
-        isBestSeller: false,
-        isActive: true,
-        rating: 5,
-        reviewCount: 0
-      },
-      {
-        title: 'Airpods max ANC',
+        title: 'Airpods Max ANC',
         slug: 'airpods-max-anc',
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
         originalPrice: 1250,
-        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0013.jpg'],
+        images: [
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0012.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0015.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.47.24_475323ac.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.47.24_d47cafb5.jpg'
+        ],
         category: airpodsKulaklikCategory,
         colors: [],
         sizes: ['Standart'],
@@ -108,7 +95,25 @@ const seedData = async () => {
         reviewCount: 0
       },
       {
-        title: 'Airpods Pro ANC',
+        title: 'APPLE MAGSAFE POWERBANK',
+        slug: 'apple-magsafe-powerbank',
+        description: 'iPhone\'unuz için kablosuz ve manyetik şarj kolaylığı! Güçlü 10000 mAh …',
+        price: 700,
+        originalPrice: 799,
+        images: ['https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0013.jpg'],
+        category: powerbankCategory,
+        colors: [],
+        sizes: ['10000mAh'],
+        stock: 20,
+        sku: 'Powerbank1',
+        isNew: true,
+        isBestSeller: false,
+        isActive: true,
+        rating: 5,
+        reviewCount: 0
+      },
+      {
+        title: 'Airpods 4.Nesil ANC',
         slug: 'airpods-4-nesil-anc',
         description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
         price: 899,
@@ -118,7 +123,49 @@ const seedData = async () => {
         colors: [],
         sizes: ['Standart'],
         stock: 20,
+        sku: 'Airpods4NesiANC1',
+        isNew: true,
+        isBestSeller: false,
+        isActive: true,
+        rating: 5,
+        reviewCount: 0
+      },
+      {
+        title: 'Airpods Pro ANC',
+        slug: 'airpods-pro-anc',
+        description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
+        price: 899,
+        originalPrice: 1250,
+        images: [
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0016.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/IMG-20251101-WA0017.jpg'
+        ],
+        category: airpodsKulaklikCategory,
+        colors: [],
+        sizes: ['Standart'],
+        stock: 20,
         sku: 'AirpodsProANC1',
+        isNew: true,
+        isBestSeller: false,
+        isActive: true,
+        rating: 5,
+        reviewCount: 0
+      },
+      {
+        title: 'AirPods 3.Nesil ANC',
+        slug: 'airpods-3-nesil-anc',
+        description: 'Kargo bedeli teslimat esnasında alıcı tarafından kapıda ödenir.',
+        price: 799,
+        originalPrice: 1100,
+        images: [
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.50.09_452c198f.jpg',
+          'https://raw.githubusercontent.com/emregurs3s/karakus-images/main/Products/WhatsApp%20Görsel%202025-11-01%20saat%2016.50.10_3e58f5f7.jpg'
+        ],
+        category: airpodsKulaklikCategory,
+        colors: [],
+        sizes: ['Standart'],
+        stock: 20,
+        sku: 'Airpods3NesiANC1',
         isNew: true,
         isBestSeller: false,
         isActive: true,
