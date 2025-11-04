@@ -70,6 +70,20 @@ router.post('/create-shopier-payment', async (req, res) => {
       cleanAddress
     });
 
+    // Generate random number for signature
+    const randomNr = Math.random().toString(36).substring(2, 11);
+
+    // Shopier signature: base64(HMAC_SHA256(random_nr + platform_order_id + total_amount + currency, API_SECRET))
+    const signatureData = `${randomNr}${orderId}${formattedAmount}TL`;
+    console.log('Signature data:', signatureData);
+
+    const signature = crypto
+      .createHmac('sha256', SHOPIER_API_SECRET)
+      .update(signatureData)
+      .digest('base64');
+
+    console.log('Signature generated:', signature);
+
     // Prepare Shopier payment data
     const shopierData = {
       API_key: SHOPIER_API_KEY,
@@ -89,7 +103,8 @@ router.post('/create-shopier-payment', async (req, res) => {
       is_in_frame: '0',
       current_language: 'tr',
       modul_version: '1.0',
-      random_nr: Math.random().toString(36).substring(2, 11),
+      random_nr: randomNr,
+      signature: signature,
       callback_url: `https://karakus-website-backend.onrender.com/api/payment/shopier-callback`,
       cancel_url: `https://karakustech.com/payment/fail`,
       success_url: `https://karakustech.com/payment/success`,
@@ -98,28 +113,6 @@ router.post('/create-shopier-payment', async (req, res) => {
     };
 
     console.log('Shopier data prepared:', shopierData);
-
-    // Generate signature for Shopier
-    const signatureString = Object.keys(shopierData)
-      .sort()
-      .map(key => `${key}=${shopierData[key as keyof typeof shopierData]}`)
-      .join('&');
-
-    console.log('Signature string:', signatureString);
-
-    const signature = crypto
-      .createHmac('sha256', SHOPIER_API_SECRET)
-      .update(signatureString)
-      .digest('hex');
-
-    console.log('Signature generated:', signature);
-
-    // Add signature to data
-    const finalData = {
-      ...shopierData,
-      signature
-    };
-
     console.log('=== PAYMENT DATA READY ===');
 
     // Return payment form data
@@ -127,7 +120,7 @@ router.post('/create-shopier-payment', async (req, res) => {
       success: true,
       data: {
         orderId,
-        shopierFormData: finalData,
+        shopierFormData: shopierData,
         shopierUrl: 'https://www.shopier.com/ShowProduct/api_pay4.php'
       }
     });
