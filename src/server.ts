@@ -17,6 +17,7 @@ import paymentRouter from './routes/payment.js';
 import ordersRouter from './routes/orders.js';
 import passwordRouter from './routes/password.js';
 import userRouter from './routes/user.js';
+import seedRouter from './routes/seed.js';
 
 // Load environment variables
 dotenv.config();
@@ -184,6 +185,7 @@ app.use('/api/payment', paymentRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/password', passwordRouter);
 app.use('/api/user', userRouter);
+app.use('/api/seed', seedRouter);
 
 // API 404 handler - only for API routes
 app.use('/api/*', (req, res) => {

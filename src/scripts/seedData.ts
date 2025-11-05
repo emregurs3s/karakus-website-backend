@@ -216,4 +216,6 @@ const seedData = async () => {
 export default seedData;
 
 // Run directly if this file is executed
-seedData();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seedData();
+}
