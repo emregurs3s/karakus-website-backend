@@ -51,7 +51,7 @@ const loginSchema = z.object({
 });
 
 // POST /api/auth/register - Register user
-router.post('/register', registerLimiter, async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
     
@@ -111,7 +111,7 @@ router.post('/register', registerLimiter, async (req, res) => {
 });
 
 // POST /api/auth/login - Login user
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const validatedData = loginSchema.parse(req.body);
     
